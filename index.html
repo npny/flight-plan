@@ -1,10 +1,11 @@
 <html>
 	<head>
-		<title>IGN OACI 1:250k VFR 2015</title>
+		<title>IGN 1:500k VFR OACI 2015</title>
 		<meta charset="UTF-8">
 		<meta name="robots" content="noindex">
 		<link rel="stylesheet" href="leaflet.css" />
 		<script src="leaflet.js"></script>
+		<script src="leaflet.editable.js"></script>
 		<style>
 			body {margin: 0;}
 			#map {height: 100%; width: 100%;}
@@ -18,11 +19,26 @@
 			const remoteTiles = "http://wxs.ign.fr/j5tcdln4ya4xggpdu4j0f0cn/geoportail/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-OACI&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fjpeg";
 			const localTiles = "data/{z}/{x}_{y}.jpg";
 
+			const polylineStyle = {
+				color: "black",
+				weight: 10,
+				opacity: .75,
+			};
+
+			const lineguideStyle = {
+				color: "black",
+				weight: 10,
+				opacity: .5,
+				dashArray: "20,10",
+				lineCap: "butt",
+			}
 
 			const map = L.map('map', {
 
 				maxBounds: L.latLngBounds(L.latLng(41.0, -6.0), L.latLng(52.0, 11.0)),
 				bounceAtZoomLimits: false,
+				editable: true,
+				editOptions: {lineGuideOptions: lineguideStyle},
 
 				// Continuous zoom
 				zoomSnap: 0,
@@ -32,18 +48,65 @@
 
 			}).setView([48.8567, 2.3508], 8);
 
+			//L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {opacity: 1.0}).addTo(map);
 			
 			const layer = L.tileLayer(remoteTiles, {
 			    
 			    attribution: "Map data &copy; <a href=\"http://www.geoportail.gouv.fr/accueil\">Geoportail</a>",
 			    minZoom: 6,
 			    maxNativeZoom: 11,
+			    //opacity: .5
 
 			});
 
-
 			layer._invalidateAll = () => {}; // Prevents flickering
 			layer.addTo(map);
+
+
+			// Path edition
+			var polyline = L.polyline([], polylineStyle);
+
+			polyline.addTo(map);
+			polyline.enableEdit();
+
+
+			function startEdtion() {
+
+				if(polyline.isEmpty())
+					polyline.editor.startDrawingForward();
+				else
+					polyline.editor.continueForward();
+			}
+
+			function stopEdition() {
+					polyline.editor.cancelDrawing();
+			}
+
+			function resetLine() {
+				stopEdition();
+				polyline.setLatLngs([]);
+				polyline.remove();
+			}
+
+			document.addEventListener("keydown", function(e) {
+
+				if(e.keyCode == 16) // Shift key
+					startEdtion();
+
+				if(e.keyCode == 27) // Escape key
+					resetLine();
+			});
+
+			document.addEventListener("keyup", function(e) {
+				if(e.keyCode == 16) // Shift key
+					stopEdition();
+			});
+
+			document.addEventListener("contextmenu", function(e) {
+				e.preventDefault();
+			})
+
+
 
 		</script>
 	</body>
