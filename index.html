@@ -7,12 +7,43 @@
 		<script src="leaflet.js"></script>
 		<script src="leaflet.editable.js"></script>
 		<style>
-			body {margin: 0;}
-			#map {height: 100%; width: 100%;}
+			body {
+				margin: 0;
+				font-family: "Ubuntu", "Helvetica", sans-serif;
+				font-size: 14px;
+				font-weight: lighter;
+			}
+
+			#map {
+				height: 100%;
+				width: 100%;
+			}
+
+			#instructions {
+				z-index: 500;
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				margin: 20px;
+				padding: 20px;
+				border-radius: 5px;
+				background: #222;
+				color: white;
+				opacity: .75;
+				opacity: 0;
+				transition: opacity .5s ease-in-out;
+			}
+
+			#instructions p {margin: 0;}
 		</style>
 	</head>
 	<body>
 		<div id="map"></div>
+		<div id="instructions">
+			<p>Shift + Click to add a point</p>
+			<p>Right-Click to delete a point</p>
+			<p>Escape to start over</p>
+		</div>
 		<script type="text/javascript">
 
 			// Hard-coded parameters for the OACI map
@@ -37,6 +68,9 @@
 
 				maxBounds: L.latLngBounds(L.latLng(41.0, -6.0), L.latLng(52.0, 11.0)),
 				bounceAtZoomLimits: false,
+				boxZoom: false,
+
+				// Edition
 				editable: true,
 				editOptions: {lineGuideOptions: lineguideStyle},
 
@@ -68,6 +102,17 @@
 
 			polyline.addTo(map);
 			polyline.enableEdit();
+
+			// Delete with right-click instead of left-click
+			polyline.editor.tools
+			.on('editable:vertex:rawclick', function(e) {
+				e.cancel();
+			})
+			.on('editable:vertex:contextmenu', function(e) {
+				if (polyline.editor.vertexCanBeDeleted(e.vertex))
+					e.vertex.delete();
+			});
+
 
 
 			function startEdtion() {
@@ -103,8 +148,12 @@
 			});
 
 			document.addEventListener("contextmenu", function(e) {
-				e.preventDefault();
-			})
+				//e.preventDefault();
+			});
+
+			// Instructions pop-up
+			setTimeout(() => document.getElementById("instructions").style.opacity = .85, 3e3);
+			setTimeout(() => document.getElementById("instructions").style.opacity = 0, 12e3);
 
 
 
