@@ -1,0 +1,84 @@
+body {
+  margin: 0;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  font-weight: lighter;
+}
+#map {
+  height: 100%;
+  width: 100%;
+}
+.cpop-marker {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  border: none;
+  background: red;
+}
+.leaflet-vertex-icon {
+  box-sizing: border-box;
+  border: 3px solid black;
+  border-radius: 20px;
+}
+.leaflet-middle-icon {
+  box-sizing: border-box;
+  border: 3px solid black;
+  border-radius: 20px;
+}
+.overlay {
+  background: #222;
+  color: white;
+  opacity: .85;
+  border-radius: 5px;
+}
+#steps {
+  background: #222;
+  color: white;
+  opacity: .85;
+  border-radius: 5px;
+  font-family: monospace;
+  position: absolute;
+  z-index: 510;
+  bottom: 10px;
+  left: 10px;
+  width: 13em;
+  padding: 20px;
+  margin: 0;
+}
+#instructions {
+  background: #222;
+  color: white;
+  opacity: .85;
+  z-index: 500;
+  position: absolute;
+  bottom: 45px;
+  right: 115px;
+  padding: 20px;
+  border-radius: 5px;
+  font-style: italic;
+}
+#instructions p {
+  margin: 0;
+}
+#get-vac {
+  background: #222;
+  color: white;
+  opacity: .85;
+  border-radius: 5px;
+  position: absolute;
+  z-index: 510;
+  bottom: 45px;
+  right: 10px;
+  padding: 40px 0;
+  border: none;
+  width: 100px;
+  font: inherit;
+}
+.leaflet-control-scale-line {
+  background: transparent;
+  border: 3px solid black;
+  border-top: none;
+  font-weight: bold;
+  text-align: right;
+  color: black;
+}

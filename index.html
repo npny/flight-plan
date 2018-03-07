@@ -1,212 +1,26 @@
 <html>
 	<head>
-		<title>IGN 1:500k VFR OACI 2015</title>
+		<title>IGN VFR 1:500k 2018</title>
 		<meta charset="UTF-8">
-		<meta name="robots" content="noindex">
 		<link rel="stylesheet" href="leaflet.css" />
+		<link rel="stylesheet" href="style.css">
 		<script src="leaflet.js"></script>
 		<script src="leaflet.editable.js"></script>
 		<script src="leaflet.geometryutil.js"></script>
-		<style>
-			body {
-				margin: 0;
-				font-family: "Ubuntu", "Helvetica", sans-serif;
-				font-size: 14px;
-				font-weight: lighter;
-			}
-
-			#map {
-				height: 100%;
-				width: 100%;
-			}
-
-			#instructions {
-				z-index: 500;
-				position: absolute;
-				left: 0;
-				bottom: 0;
-				margin: 20px;
-				padding: 20px;
-				border-radius: 5px;
-				background: #222;
-				color: white;
-				opacity: .75;
-				opacity: 0;
-				transition: opacity .5s ease-in-out;
-			}
-
-			#instructions p {margin: 0;}
-
-			.cpop-marker {
-				width: 10px;
-				height: 10px;
-				border-radius: 5px;
-				border: none;
-				background: red;
-			}
-		</style>
 	</head>
 	<body>
 		<div id="map"></div>
+		<button id="get-vac" onclick="getVac()">Get VAC</button>
+		<pre id="steps"></pre>
 		<div id="instructions">
 			<p>Shift + Click to add a point</p>
 			<p>Right-Click to delete a point</p>
 			<p>Escape to start over</p>
 		</div>
-		<script type="text/javascript">
-
-			// Hard-coded parameters for the OACI map
-			const remoteTiles = "http://wxs.ign.fr/j5tcdln4ya4xggpdu4j0f0cn/geoportail/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-OACI&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fjpeg";
-			const localTiles = "data/{z}/{x}_{y}.jpg";
-
-			const polylineStyle = {
-				color: "black",
-				weight: 10,
-				opacity: .75,
-			};
-
-			const lineguideStyle = {
-				color: "black",
-				weight: 10,
-				opacity: .5,
-				dashArray: "20,10",
-				lineCap: "butt",
-			}
-
-			const map = L.map('map', {
-
-				maxBounds: L.latLngBounds(L.latLng(41.0, -6.0), L.latLng(52.0, 11.0)),
-				bounceAtZoomLimits: false,
-				boxZoom: false,
-
-				// Edition
-				editable: true,
-				editOptions: {lineGuideOptions: lineguideStyle},
-
-				// Continuous zoom
-				zoomSnap: 0,
-				wheelDebounceTime: 0,
-				zoomAnimation: false,
-				wheelPxPerZoomLevel: 100,
-
-			}).setView([48.8567, 2.3508], 8);
-
-			//L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {opacity: 1.0}).addTo(map);
-			
-			const layer = L.tileLayer(remoteTiles, {
-			    
-			    attribution: "Map data &copy; <a href=\"http://www.geoportail.gouv.fr/accueil\">Geoportail</a>",
-			    minZoom: 6,
-			    maxNativeZoom: 11,
-			    //opacity: .5
-
-			});
-
-			layer._invalidateAll = () => {}; // Prevents flickering
-			layer.addTo(map);
-
-
-			// Path edition
-			const polyline = new L.Polyline([], polylineStyle);
-
-			polyline.addTo(map);
-			polyline.enableEdit();
-
-			// Delete with right-click instead of left-click
-			polyline.editor.tools
-			.on('editable:vertex:rawclick', function(e) {
-				e.cancel();
-			})
-			.on('editable:vertex:contextmenu', function(e) {
-				if (polyline.editor.vertexCanBeDeleted(e.vertex))
-					e.vertex.delete();
-			});
-
-
-
-			function startEdtion() {
-				if(polyline.editor.drawing()) return;
-				if(polyline.isEmpty())
-					polyline.editor.startDrawingForward();
-				else
-					polyline.editor.continueForward();
-			}
-
-			function stopEdition() {
-					polyline.editor.cancelDrawing();
-			}
-
-			function resetLine() {
-				stopEdition();
-				polyline.setLatLngs([]);
-				polyline.remove();
-			}
-
-			document.addEventListener("keydown", function(e) {
-
-				if(e.keyCode == 16) // Shift key
-					startEdtion();
-
-				if(e.keyCode == 27) // Escape key
-					resetLine();
-			});
-
-			document.addEventListener("keyup", function(e) {
-				if(e.keyCode == 16) // Shift key
-					stopEdition();
-			});
-
-			document.addEventListener("contextmenu", function(e) {
-				e.preventDefault();
-			});
-
-			// Instructions pop-up
-			setTimeout(() => document.getElementById("instructions").style.opacity = .85, 3e3);
-			setTimeout(() => document.getElementById("instructions").style.opacity = 0, 12e3);
-
-			// "Closest point on path" marker
-			/*
-			const cursor = new L.Marker(map.getCenter(), {icon: L.divIcon({className: "cpop-marker"})}).addTo(map);
-			map.on("mousemove", (e)=>{
-				// Read scope (where it will go looking for "polyline" if you don't specify anything)
-				// Write scope (where it will write 'closest' when you don't specify the full path)
-				if(polyline.getLatLngs().length < 2) return;
-				const closest = L.GeometryUtil.closest(map, polyline, e.latlng);
-				console.log(closest);
-				cursor.setLatLng(closest);
-			});
-			*/
-
-			function padLeft(string, char, length) {
-				string = string.toString();
-				while(string.length < length) string = char + string;
-				return string;
-			}
-
-			// Export route
-			const alphabet = "Alpha Bravo Charlie Delta Echo Fox Golf Hotel India Juliet Kilo Lima Mike November Oscar Papa Quebec Romeo Sierra Tango Uniform Victor Whisky X-ray Yankee Zulu".split(" ");
-			const meterToNauticalMile = 0.000539957;
-
-			printHeading = hdg => padLeft(Math.round(hdg), '0', 3) + '°';
-			printDistance = meters => Math.round( meters * meterToNauticalMile * 10 ) / 10;
-
-			function exportRoute() {
-				const points = polyline.getLatLngs();
-
-				for(var i = 0; i < points.length; i++)
-				{
-					console.log(alphabet[i])
-
-					if(i+1 == points.length) continue;
-
-					const heading = printHeading( L.GeometryUtil.bearing(points[i], points[i+1]) );
-					const distance = printDistance( L.GeometryUtil.length([points[i], points[i+1]]) );
-					console.log(` > Continue Heading ${heading} for ${distance} nm`);
-				}
-			}
-
-
-
-		</script>
+		
+		<script type="text/javascript" src="map.js"></script>
+		<script type="text/javascript" src="edit.js"></script>
+		<script type="text/javascript" src="route.js"></script>
+		<script type="text/javascript" src="extra.js"></script>
 	</body>
 </html>
